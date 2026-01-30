@@ -16,7 +16,7 @@ Customer churn is a critical challenge for subscription-based businesses, direct
 * Probabilistic outputs enable prioritization and decision-making
 
 
-# 2. Architecture Overview
+## 2. Architecture Overview
 This project is implemented using the **Databricks Lakehouse architecture** with an end-to-end AI workflow.
 
 ### High-Level Flow
@@ -43,7 +43,7 @@ Dashboards & Insights
 * Databricks Jobs & Dashboards
 
 
-# 3. Medallion Architecture Explanation
+## 3. Medallion Architecture Explanation
 
 ### Bronze Layer – Raw Ingestion
 * Stores data exactly as received
@@ -66,7 +66,7 @@ Dashboards & Insights
 -gold.customer_churn_features
 -gold.customer_churn_predictions`
 
-# 4. Machine Learning Approach
+## 4. Machine Learning Approach
 
 ### Problem Type
 -Binary Classification (Churn vs No Churn)
@@ -84,7 +84,7 @@ Dashboards & Insights
 * contract_type_encoded – commitment strength
 * total_services_count – customer engagement score
 
-# 5. Results & Insights
+## 5. Results & Insights
 
 ### Key Business Insights
 * Month-to-month customers have the highest churn risk
@@ -100,7 +100,7 @@ Dashboards & Insights
 
 
 
-# 6. Decision Support & Business Impact
+## 6. Decision Support & Business Impact
 
 Instead of stopping at prediction, the system generates **retention actions**:
 
@@ -117,7 +117,7 @@ Instead of stopping at prediction, the system generates **retention actions**:
 * Converts AI outputs into operational decisions
 
 
-# 7. Dashboards & KPIs
+## 7. Dashboards & KPIs
 
 Key KPIs visualized using Databricks SQL dashboards:
 
@@ -129,14 +129,14 @@ Key KPIs visualized using Databricks SQL dashboards:
 
 These dashboards allow stakeholders to monitor churn risk and prioritize interventions.
 
-# 8. Limitations
+## 8. Limitations
 
 * Model is trained on historical data and may not capture sudden market changes
 * Logistic Regression assumes linear relationships
 * Dataset size and feature scope may limit predictive power
 * No real-time streaming integration in current version
 
-# 9. Future Improvements
+## 9. Future Improvements
 
 * Experiment with tree-based models (Random Forest, XGBoost)
 * Add SHAP or feature importance for deeper explainability
@@ -144,7 +144,7 @@ These dashboards allow stakeholders to monitor churn risk and prioritize interve
 * Automate retraining using Databricks Jobs
 * Integrate outputs with CRM or marketing automation tools
 
-# 10. Reproducibility & Governance
+## 10. Reproducibility & Governance
 
 * All data stored as Delta tables with ACID guarantees
 * Tracked using MLflow
