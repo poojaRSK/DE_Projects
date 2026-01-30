@@ -1,0 +1,1599 @@
+{
+  "datasets": [
+    {
+      "name": "34e5acbb",
+      "displayName": "% High-Risk Customers",
+      "queryLines": [
+        "SELECT\r\n",
+        "  risk_segment,\r\n",
+        "  COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () AS percentage\r\n",
+        "FROM gold.customer_churn_predictions\r\n",
+        "GROUP BY risk_segment;"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    },
+    {
+      "name": "22f0629f",
+      "displayName": "Revenue at Risk",
+      "queryLines": [
+        "SELECT\r\n",
+        "  p.risk_segment,\r\n",
+        "  SUM(f.MonthlyCharges) AS revenue_at_risk\r\n",
+        "FROM gold.customer_churn_predictions p\r\n",
+        "JOIN gold.customer_churn_features f\r\n",
+        "ON p.customerID = f.customerID\r\n",
+        "GROUP BY p.risk_segment;\r\n"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    },
+    {
+      "name": "3e52825e",
+      "displayName": "Recommended Actions Count",
+      "queryLines": [
+        "SELECT\r\n",
+        "  recommended_action,\r\n",
+        "  COUNT(*) AS customer_count\r\n",
+        "FROM gold.customer_churn_predictions\r\n",
+        "GROUP BY recommended_action;\r\n"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    },
+    {
+      "name": "82d76236",
+      "displayName": "Average Churn Probability by Contract Type",
+      "queryLines": [
+        "SELECT\r\n",
+        "  Contract,\r\n",
+        "  AVG(churn_prob) AS avg_churn_probability\r\n",
+        "FROM gold.customer_churn_predictions p\r\n",
+        "JOIN gold.customer_churn_features f\r\n",
+        "ON p.customerID = f.customerID\r\n",
+        "GROUP BY Contract;\r\n"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    },
+    {
+      "name": "bd23debe",
+      "displayName": "Services vs Churn Risk Distribution",
+      "queryLines": [
+        "SELECT\r\n",
+        "    f.total_services_count,\r\n",
+        "    COUNT(*) AS total_customers,\r\n",
+        "    SUM(CASE WHEN p.risk_segment = 'High Risk' THEN 1 ELSE 0 END) AS high_risk_customers,\r\n",
+        "    ROUND(\r\n",
+        "        SUM(CASE WHEN p.risk_segment = 'High Risk' THEN 1 ELSE 0 END) * 100.0 \r\n",
+        "        / COUNT(*),\r\n",
+        "        2\r\n",
+        "    ) AS high_risk_percentage\r\n",
+        "FROM gold.customer_churn_predictions p\r\n",
+        "JOIN gold.customer_churn_features f\r\n",
+        "  ON p.customerID = f.customerID\r\n",
+        "GROUP BY f.total_services_count\r\n",
+        "ORDER BY f.total_services_count;\r\n",
+        "\r\n"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    },
+    {
+      "name": "65f0f97d",
+      "displayName": "Top 20 High-Risk Customerss",
+      "queryLines": [
+        "SELECT\r\n",
+        "    p.customerID,\r\n",
+        "    p.churn_prob,\r\n",
+        "    f.MonthlyCharges,\r\n",
+        "    p.recommended_action\r\n",
+        "FROM gold.customer_churn_predictions p\r\n",
+        "JOIN gold.customer_churn_features f\r\n",
+        "  ON p.customerID = f.customerID\r\n",
+        "WHERE p.risk_segment = 'High Risk'\r\n",
+        "ORDER BY p.churn_prob DESC, f.MonthlyCharges DESC\r\n",
+        "LIMIT 20;\r\n"
+      ],
+      "catalog": "industry",
+      "schema": "gold"
+    }
+  ],
+  "pages": [
+    {
+      "name": "193e28bd",
+      "displayName": "Untitled page",
+      "layout": [
+        {
+          "widget": {
+            "name": "high-risk-customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "34e5acbb",
+                  "fields": [
+                    {
+                      "name": "avg(percentage)",
+                      "expression": "AVG(`percentage`)"
+                    },
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`percentage` IN (`percentage`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "avg(percentage)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "risk_segment",
+                  "legend": {
+                    "hide": true
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "High Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 4
+                        }
+                      },
+                      {
+                        "value": "Low Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      {
+                        "value": "Medium Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "avg(percentage)"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "headerAlignment": "left",
+                "title": "% High-Risk Customers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue-at-risk",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "22f0629f",
+                  "fields": [
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    },
+                    {
+                      "name": "sum(revenue_at_risk)",
+                      "expression": "SUM(`revenue_at_risk`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`revenue_at_risk` IN (`revenue_at_risk`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "risk_segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(revenue_at_risk)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "risk_segment",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    },
+                    "mappings": [
+                      {
+                        "value": "High Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 4
+                        }
+                      },
+                      {
+                        "value": "Low Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      {
+                        "value": "Medium Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue at Risk",
+                "showDescription": false
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "recommended-actions-count",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "3e52825e",
+                  "fields": [
+                    {
+                      "name": "sum(customer_count)",
+                      "expression": "SUM(`customer_count`)"
+                    },
+                    {
+                      "name": "recommended_action",
+                      "expression": "`recommended_action`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`recommended_action` IN (`recommended_action`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "SUM(`customer_count`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(customer_count)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "recommended_action",
+                  "axis": {
+                    "labelAngle": 0
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "sum(customer_count)"
+                      }
+                    }
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "sum(customer_count)"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Recommended Actions Count"
+              },
+              "mark": {
+                "colors": [
+                  "#DD99BD",
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "average-churn-probability-contract-type",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "82d76236",
+                  "fields": [
+                    {
+                      "name": "Contract",
+                      "expression": "`Contract`"
+                    },
+                    {
+                      "name": "avg_churn_probability",
+                      "expression": "`avg_churn_probability`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "Contract",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000,
+                    "title": "Contract",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "cellFormat": {
+                      "default": {
+                        "foregroundColor": "#9A3147"
+                      },
+                      "rules": []
+                    }
+                  },
+                  {
+                    "fieldName": "avg_churn_probability",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "avg_churn_probability",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "cellFormat": {
+                      "default": {
+                        "foregroundColor": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      "rules": []
+                    }
+                  }
+                ]
+              },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": true,
+              "frame": {
+                "showTitle": true,
+                "title": "Average Churn Probability by Contract Type"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 12,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "top-20-revenue-at-risk-customers-1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "65f0f97d",
+                  "fields": [
+                    {
+                      "name": "customerID",
+                      "expression": "`customerID`"
+                    },
+                    {
+                      "name": "churn_prob",
+                      "expression": "`churn_prob`"
+                    },
+                    {
+                      "name": "MonthlyCharges",
+                      "expression": "`MonthlyCharges`"
+                    },
+                    {
+                      "name": "recommended_action",
+                      "expression": "`recommended_action`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "customerID",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000,
+                    "title": "customerID",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "churn_prob",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "churn_prob",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "MonthlyCharges",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100002,
+                    "title": "MonthlyCharges",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "recommended_action",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100003,
+                    "title": "recommended_action",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  }
+                ]
+              },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": true,
+              "frame": {
+                "showTitle": true,
+                "title": "Top 20 revenue-at-risk customers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "services-vs-churn-risk-distribution",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bd23debe",
+                  "fields": [
+                    {
+                      "name": "total_services_count",
+                      "expression": "`total_services_count`"
+                    },
+                    {
+                      "name": "high_risk_percentage",
+                      "expression": "`high_risk_percentage`"
+                    },
+                    {
+                      "name": "high_risk_customers",
+                      "expression": "`high_risk_customers`"
+                    },
+                    {
+                      "name": "total_customers",
+                      "expression": "`total_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "forecast-line",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_services_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "original": {
+                    "fieldName": "high_risk_percentage"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "prediction": {
+                    "fieldName": "high_risk_customers"
+                  },
+                  "predictionUpper": {
+                    "fieldName": "total_customers"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Services vs Churn Risk Distribution"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    },
+    {
+      "name": "9a661f1e",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "5f60a228",
+            "queries": [
+              {
+                "name": "dashboards/01f0fd26e58f1465af9fe39cf21617eb/datasets/01f0fd2750ac12dd8f93c9bf2a2051a3_risk_segment",
+                "query": {
+                  "datasetName": "34e5acbb",
+                  "fields": [
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    },
+                    {
+                      "name": "risk_segment_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "risk_segment",
+                    "queryName": "dashboards/01f0fd26e58f1465af9fe39cf21617eb/datasets/01f0fd2750ac12dd8f93c9bf2a2051a3_risk_segment"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS"
+    },
+    {
+      "name": "ce1ce5d0",
+      "displayName": "Untitled page 1",
+      "layout": [
+        {
+          "widget": {
+            "name": "770aa4d0",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "34e5acbb",
+                  "fields": [
+                    {
+                      "name": "avg(percentage)",
+                      "expression": "AVG(`percentage`)"
+                    },
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`percentage` IN (`percentage`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "avg(percentage)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "risk_segment",
+                  "legend": {
+                    "hide": true
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "High Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 4
+                        }
+                      },
+                      {
+                        "value": "Low Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      {
+                        "value": "Medium Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "avg(percentage)"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "headerAlignment": "left",
+                "title": "% High-Risk Customers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "7df934a9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "22f0629f",
+                  "fields": [
+                    {
+                      "name": "risk_segment",
+                      "expression": "`risk_segment`"
+                    },
+                    {
+                      "name": "sum(revenue_at_risk)",
+                      "expression": "SUM(`revenue_at_risk`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`revenue_at_risk` IN (`revenue_at_risk`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "risk_segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(revenue_at_risk)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "risk_segment",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    },
+                    "mappings": [
+                      {
+                        "value": "High Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 4
+                        }
+                      },
+                      {
+                        "value": "Low Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      {
+                        "value": "Medium Risk",
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue at Risk",
+                "showDescription": false
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "43cd6b63",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "3e52825e",
+                  "fields": [
+                    {
+                      "name": "sum(customer_count)",
+                      "expression": "SUM(`customer_count`)"
+                    },
+                    {
+                      "name": "recommended_action",
+                      "expression": "`recommended_action`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`recommended_action` IN (`recommended_action`) OR TRUE"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "SUM(`customer_count`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(customer_count)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "recommended_action",
+                  "axis": {
+                    "labelAngle": 0
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "sum(customer_count)"
+                      }
+                    }
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "sum(customer_count)"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Recommended Actions Count"
+              },
+              "mark": {
+                "colors": [
+                  "#DD99BD",
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "75c34e14",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "82d76236",
+                  "fields": [
+                    {
+                      "name": "Contract",
+                      "expression": "`Contract`"
+                    },
+                    {
+                      "name": "avg_churn_probability",
+                      "expression": "`avg_churn_probability`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "Contract",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000,
+                    "title": "Contract",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "cellFormat": {
+                      "default": {
+                        "foregroundColor": "#9A3147"
+                      },
+                      "rules": []
+                    }
+                  },
+                  {
+                    "fieldName": "avg_churn_probability",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "avg_churn_probability",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "cellFormat": {
+                      "default": {
+                        "foregroundColor": {
+                          "themeColorType": "visualizationColors",
+                          "position": 3
+                        }
+                      },
+                      "rules": []
+                    }
+                  }
+                ]
+              },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": true,
+              "frame": {
+                "showTitle": true,
+                "title": "Average Churn Probability by Contract Type"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 12,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "2648965f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "65f0f97d",
+                  "fields": [
+                    {
+                      "name": "customerID",
+                      "expression": "`customerID`"
+                    },
+                    {
+                      "name": "churn_prob",
+                      "expression": "`churn_prob`"
+                    },
+                    {
+                      "name": "MonthlyCharges",
+                      "expression": "`MonthlyCharges`"
+                    },
+                    {
+                      "name": "recommended_action",
+                      "expression": "`recommended_action`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "customerID",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000,
+                    "title": "customerID",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "churn_prob",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "churn_prob",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "MonthlyCharges",
+                    "numberFormat": "0.00",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100002,
+                    "title": "MonthlyCharges",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  },
+                  {
+                    "fieldName": "recommended_action",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100003,
+                    "title": "recommended_action",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false
+                  }
+                ]
+              },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": true,
+              "frame": {
+                "showTitle": true,
+                "title": "Top 20 revenue-at-risk customers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 15
+          }
+        },
+        {
+          "widget": {
+            "name": "13fbdc0c",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bd23debe",
+                  "fields": [
+                    {
+                      "name": "total_services_count",
+                      "expression": "`total_services_count`"
+                    },
+                    {
+                      "name": "high_risk_percentage",
+                      "expression": "`high_risk_percentage`"
+                    },
+                    {
+                      "name": "high_risk_customers",
+                      "expression": "`high_risk_customers`"
+                    },
+                    {
+                      "name": "total_customers",
+                      "expression": "`total_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "forecast-line",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_services_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "original": {
+                    "fieldName": "high_risk_percentage"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "prediction": {
+                    "fieldName": "high_risk_customers"
+                  },
+                  "predictionUpper": {
+                    "fieldName": "total_customers"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
