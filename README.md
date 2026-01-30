@@ -2,7 +2,7 @@
 
 **Built on Databricks Lakehouse**
 
-# 1. Business Problem
+## 1. Business Problem
 Customer churn is a critical challenge for subscription-based businesses, directly impacting revenue and customer lifetime value. Traditional rule-based approaches (e.g., “low usage customers will churn”) fail to capture complex interactions between customer behavior, billing patterns, and service usage.
 
 ### The goal of this project is to:
@@ -152,5 +152,5 @@ These dashboards allow stakeholders to monitor churn risk and prioritize interve
 * End-to-end workflow orchestrated using Databricks Jobs
 
 
->>>>>>>>> This project demonstrates how Databricks can be used to build an end-to-end AI-powered churn intelligence system that transforms predictions into actionable business decisions.
+-This project demonstrates how Databricks can be used to build an end-to-end AI-powered churn intelligence system that transforms predictions into actionable business decisions.
 
