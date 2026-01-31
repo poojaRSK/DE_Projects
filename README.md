@@ -1,156 +1,202 @@
-# Customer Churn Prediction & Retention Intelligence
-
-**Built on Databricks Lakehouse**
+# AI-Driven Customer Churn Prediction & Decision Support System
 
 ## 1. Business Problem
-Customer churn is a critical challenge for subscription-based businesses, directly impacting revenue and customer lifetime value. Traditional rule-based approaches (e.g., “low usage customers will churn”) fail to capture complex interactions between customer behavior, billing patterns, and service usage.
 
-### The goal of this project is to:
-* Predict the probability of customer churn
-* Segment customers by churn risk
-* Translate predictions into **actionable retention strategies**
+Customer churn is a critical challenge for subscription-based businesses, directly impacting revenue and customer lifetime value. Traditional rule-based approaches detect churn too late, fail to capture complex customer behavior, and provide no actionable guidance on how to retain customers.
 
-### Why AI?
-* Churn drivers are multi-dimensional and non-linear
-* Machine learning can learn hidden patterns that static rules cannot
-* Probabilistic outputs enable prioritization and decision-making
+This project addresses that gap by building an **end-to-end, AI-driven churn prediction and decision-support system** that not only identifies customers at risk of churning but also explains *why* they are at risk and *what actions* the business should take.
 
+---
 
-## 2. Architecture Overview
-This project is implemented using the **Databricks Lakehouse architecture** with an end-to-end AI workflow.
+## 2. Objective
+
+The primary objectives of this project are to:
+
+* Predict customer churn probability
+* Segment customers into risk categories (Low / Medium / High)
+* Generate actionable retention strategies
+* Enable proactive, data-driven decision-making
+
+The solution shifts churn management from **reactive reporting** to **proactive intervention**.
+
+---
+
+## 3. Architecture Overview
+
+The solution is implemented on the **Databricks Lakehouse Platform** using the **Medallion Architecture**.
 
 ### High-Level Flow
-CSV Source
-   ↓
-Bronze Layer (Raw Data)
-   ↓
-Silver Layer (Cleaned & Standardized)
-   ↓
-Gold Layer (Feature-Ready & Business Tables)
-   ↓
-ML Model (Churn Probability)
-   ↓
-Risk Segmentation & Decision Rules
-   ↓
-Dashboards & Insights
 
+CSV Source → Bronze → Silver → Gold → ML Model → Risk Segmentation → Retention Actions → Dashboards
 
 ### Key Technologies
+
 * Databricks (PySpark, SQL)
 * Delta Lake
 * MLflow
 * Unity Catalog
 * Databricks Jobs & Dashboards
 
+---
 
-## 3. Medallion Architecture Explanation
+## 4. Data Architecture (Medallion Design)
 
-### Bronze Layer – Raw Ingestion
-* Stores data exactly as received
-* No transformations except schema inference
-* Ensures data traceability and auditability
-**Example Table**
- -bronze.customer_churn
+### 4.1 Bronze Layer – Raw Ingestion
 
-### Silver Layer – Data Cleaning & Standardization
-* Missing and invalid data handling
-* Standardizes categorical values (e.g., “No internet service” → “Not Applicable”)
-* Converts target variable (`Churn`) to numeric
-**Example Table**
- -silver.customer_churn_clean
- 
-### Gold Layer – Business & ML Ready
-* Contains engineered features and analytics-ready columns
-* Serves as the single source of truth for ML, dashboards, and insights
-**Example Tables**
--gold.customer_churn_features
--gold.customer_churn_predictions`
+**Purpose:** Preserve raw data exactly as received.
 
-## 4. Machine Learning Approach
+* No transformations applied
+* Schema inference only
+* Ensures auditability and reprocessing
+
+**Example Table:** `bronze.customer_churn`
+
+### 4.2 Silver Layer – Cleaned & Standardized
+
+**Purpose:** Improve data quality and consistency.
+
+* Handle missing values and duplicates
+* Standardize categorical values
+* Convert churn label to numeric
+
+**Example Table:** `silver.customer_churn_clean`
+
+### 4.3 Gold Layer – Feature-Ready & Analytics
+
+**Purpose:** Business-ready and ML-ready data.
+
+* Engineered features
+* Model predictions
+* Risk segmentation
+* Retention recommendations
+
+**Example Tables:**
+
+* `gold.customer_churn_features`
+* `gold.customer_churn_predictions`
+
+---
+
+## 5. Feature Engineering
+
+Instead of using raw columns, business-driven features were engineered to improve interpretability and model performance.
+
+### Key Features
+
+* **tenure_bucket:** Customer lifecycle segmentation
+* **avg_monthly_charge:** Normalized billing behavior
+* **contract_type_encoded:** Commitment strength
+* **total_services_count:** Customer engagement / stickiness score
+
+These features align ML outputs with real business understanding and actions.
+
+---
+
+## 6. Machine Learning Approach
 
 ### Problem Type
--Binary Classification (Churn vs No Churn)
+
+Binary Classification (Churn vs No Churn)
+
 ### Model Used
--Logistic Regression
-### Reason for Model Choice
+
+**Logistic Regression (Spark ML)**
+
+### Why Logistic Regression?
+
 * Interpretable coefficients
-* Lightweight and efficient
-* Suitable for structured business data
-* Easy to explain to non-technical stakeholders
+* Lightweight and scalable
+* Suitable for structured data
+* Easy to explain to business stakeholders
 
-## Feature Engineering Highlights
-* tenure_bucket – customer lifecycle segmentation
-* avg_monthly_charge – normalized billing behavior
-* contract_type_encoded – commitment strength
-* total_services_count – customer engagement score
+### Limitations
 
-## 5. Results & Insights
+* Assumes linear relationships
+* Cannot capture deep non-linear patterns
 
-### Key Business Insights
-* Month-to-month customers have the highest churn risk
-* Customers with longer tenure and annual contracts churn less
-* Customers with more add-on services show lower churn probability
+---
 
-### Risk Segmentation
-| Churn Probability | Risk Segment |
-| ----------------- | ------------ |
-| < 0.30            | Low Risk     |
-| 0.30 – 0.60       | Medium Risk  |
-| > 0.60            | High Risk    |
+## 7. Training, Evaluation & Governance
 
+### Training Setup
 
+* Train/Test Split: 80/20
 
-## 6. Decision Support & Business Impact
+### Evaluation Metrics
 
-Instead of stopping at prediction, the system generates **retention actions**:
+* ROC-AUC (Primary)
+* Precision & Recall
+* Confusion Matrix
 
-| Risk Profile                  | Recommended Action                  |
-| ----------------------------- | ----------------------------------- |
-| High risk + short tenure      | Loyalty discount & contract upgrade |
-| High risk + low service usage | Cross-sell add-on services          |
-| Medium risk                   | Engagement email                    |
-| Low risk                      | No action required                  |
+**Example Result:** ROC-AUC = 0.82
 
-### Impact
-* Enables targeted retention campaigns
-* Optimizes marketing spend
-* Converts AI outputs into operational decisions
+### MLflow Integration
 
+MLflow is used to track:
 
-## 7. Dashboards & KPIs
+* Model parameters
+* Evaluation metrics
+* Feature list
+* Trained model artifacts
 
-Key KPIs visualized using Databricks SQL dashboards:
+This ensures reproducibility, experiment comparison, and enterprise-grade governance.
 
-* % of High-Risk Customers
-* Revenue at Risk
-* Recommended Actions Distribution
-* Churn Risk by Contract Type
-* Top 20 High-Risk Customerss
+---
 
-These dashboards allow stakeholders to monitor churn risk and prioritize interventions.
+## 8. AI Innovation: From Prediction to Decision Support
 
-## 8. Limitations
+### Step 1: Churn Probability
 
-* Model is trained on historical data and may not capture sudden market changes
-* Logistic Regression assumes linear relationships
-* Dataset size and feature scope may limit predictive power
-* No real-time streaming integration in current version
+The model outputs a churn probability between 0 and 1, representing the likelihood of churn for each customer.
 
-## 9. Future Improvements
+### Step 2: Risk Segmentation
 
-* Experiment with tree-based models (Random Forest, XGBoost)
-* Add SHAP or feature importance for deeper explainability
-* Introduce real-time scoring using streaming data
-* Automate retraining using Databricks Jobs
-* Integrate outputs with CRM or marketing automation tools
+Probabilities are converted into business-friendly segments:
 
-## 10. Reproducibility & Governance
+* < 0.30 → Low Risk
+* 0.30–0.60 → Medium Risk
+* > 0.60 → High Risk
 
-* All data stored as Delta tables with ACID guarantees
-* Tracked using MLflow
-* Unity Catalog used for access control and governance
-* End-to-end workflow orchestrated using Databricks Jobs
+### Step 3: Retention Action Generation
 
+Risk segments are enriched with customer context (tenure, contract, service usage) to generate concrete actions:
 
--This project demonstrates how Databricks can be used to build an end-to-end AI-powered churn intelligence system that transforms predictions into actionable business decisions.
+* High Risk + short tenure → Loyalty discount & contract upgrade
+* High Risk + low services → Cross-sell add-ons
+* Medium Risk → Engagement email
+* Low Risk → No action required
 
+This transforms the model into a **decision-support system**, not just a prediction engine.
+
+---
+
+## 9. Final Decision-Ready Output
+
+| customer_id | churn_prob | risk_segment | recommended_action       |
+| ----------- | ---------- | ------------ | ------------------------ |
+| 4582        | 0.78       | High Risk    | Offer loyalty discount   |
+| 9123        | 0.42       | Medium Risk  | Promote bundled services |
+| 3345        | 0.12       | Low Risk     | No action required       |
+
+Each row directly answers: **“What should the business do for this customer?”**
+
+---
+
+## 10. Business Impact & Practical Use
+
+### Who Benefits
+
+* **Retention Teams:** Prioritized customer lists
+* **Marketing Teams:** Targeted campaigns instead of blanket discounts
+* **Leadership:** Visibility into revenue at risk
+* **Data Teams:** Reproducible and governed ML pipeline
+
+### Key Insights
+
+* Month-to-month customers with high charges churn the most
+* Long-tenured customers with contracts churn the least
+* Add-on services significantly reduce churn
+
+---
+
+**“This project transforms churn prediction into a scalable, governed, and actionable decision-support system that enables businesses to reduce customer attrition proactively.”**
